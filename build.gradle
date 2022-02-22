@@ -4,14 +4,44 @@ plugins {
 
 group 'net.labotomy'
 version '0.0.1'
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+// Simple Support to keep track and append build-compile number
+def compileCntrFile = file('compile.counter')
+def Properties compileCntr = new Properties()
+if (compileCntrFile.canRead()) {
+    compileCntr.load(new FileInputStream(compileCntrFile))
+}
+else {
+    compileCntr['COMPILE_NUMBER']='0'
+}
+def countNum = compileCntr['COMPILE_NUMBER'].toInteger() + 1
+compileCntr['COMPILE_NUMBER']=countNum.toString()
+compileCntr.store(compileCntrFile.newWriter(), null)
+// Re-Set version to include the build-compile number
+version = version + "-" + (System.getenv("BUILD_NUMBER") ?: "BUILDNUM") + "-" + countNum
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    // Spigot
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+
+   // maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    // maven { url = 'https://oss.sonatype.org/content/repositories/central' }
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+  //  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+   // testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    compileOnly 'org.spigotmc:spigot-api:1.18.1-R0.1-SNAPSHOT'
+    // Spigot Annotations Support - Replaces plugin.yml
+    compileOnly 'org.spigotmc:plugin-annotations:1.2.3-SNAPSHOT'
+    annotationProcessor 'org.spigotmc:plugin-annotations:1.2.3-SNAPSHOT'
+
+
 }
 
 test {
